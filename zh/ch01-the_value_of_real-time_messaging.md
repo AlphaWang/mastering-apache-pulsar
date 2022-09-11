@@ -1,4 +1,4 @@
-# 第一章：实时消息系统的价值
+# 第 1 章：实时消息系统的价值
 
 Real-time messaging systems power many of the systems we rely on today for banking, food, transportation, internet service, and communication, among others. They provide the infrastructure to make many of the daily interactions we have with these systems seem like magic. Apache Pulsar is one of these real-time messaging systems, and throughout this book, we’ll dig into what makes it unique. But first we’ll discuss the motivation for building systems like Pulsar so that you have some context for why we would take on the complexity of a real-time system with all of its moving parts.
 
