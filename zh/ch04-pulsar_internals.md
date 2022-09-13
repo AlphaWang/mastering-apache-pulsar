@@ -447,17 +447,25 @@ You may be wondering how this system benefits Apache Pulsar. Topics (the fundame
 
 
 
-## Write-Ahead Logging
+## 预写日志
 
 A write-ahead log (WAL) is used to provide atomicity and durability in a database system. This book isn’t about databases, but the WAL is a critical concept to understand in order to grasp the value of BookKeeper. If you think about a database table, you can perform actions such as inserts, updates, selects, and deletes. When you perform an insert, update, or delete, the database writes your desire to perform that action to a log (see [Figure 4-14](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#in_this_write-ahead_log_implementationc)). The database can then check against the log to validate it performed the action intended by the user. WALs are not only useful for ensuring guarantees in databases; they are also used for change data capture (CDC). Pulsar IO utilizes WALs in databases to perform CDC (we’ll cover this in [Chapter 7](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch07.html#pulsar_io-id000027)).
 
+预写日志 (WAL) 用于在数据库系统中提供原子性和持久性。本书不是关于数据库的，但为了理解 BookKeeper 的价值，WAL 是一个重要的概念。假设有一个数据库表，可以执行诸如插入、更新、查询和删除等操作。当执行插入、更新或删除操作时，数据库会将执行该操作的愿望写入日志（参见 图 4-14)。然后数据库可以对照日志验证是否执行了用户预期的操作。 WAL 不仅有助于确保数据库的保证，还用于变更数据捕获 (CDC)。 Pulsar IO 利用数据库中的 WAL 来执行 CDC（我们将在 [第 7 章](./ch07-puslar_io.md) 介绍这一点）。
+
+
+
 ![In this write-ahead log implementation, each new event is written to a log before it is executed on the underlying database storage engine.](../img/mapu_0414.png)
 
-*Figure 4-14. In this write-ahead log implementation, each new event is written to a log before it is executed on the underlying database storage engine.*
+*图 4-14. 在预写日志实现中，每个新事件在底层数据库存储引擎上执行之前都会写入日志。*
 
 
 
 BookKeeper’s durability properties, fault tolerance, and scalability make it the right choice for a WAL implementation. Additionally, BookKeeper can scale separately from the database if needed, providing modularity and loose coupling.
+
+BookKeeper 的持久性、容错性和可扩展性使其成为 WAL 实现的正确选择。此外，如果需要，BookKeeper 可以与数据库分开扩展，提供模块化和松耦合。
+
+
 
 ## Message Storing
 
