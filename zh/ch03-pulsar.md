@@ -244,17 +244,17 @@ Creating Pulsar and making it an open source project provided the building block
 
 
 
-## Pulsar Functions
+## Pulsar Function
 
 At its core, Pulsar is about performant messaging and storage. We’ve talked at length in this chapter about Pulsar’s flexible design for data storage and scalability. Pulsar Functions answer the question of how to process data stored within Pulsar. They are lightweight compute processes that can consume data from a Pulsar topic, perform some computation, and then publish the results to another Pulsar topic.
 
-Pulsar 的核心是高性能消息投递和存储。我们在本章已经详细讨论了 Pulsar 在数据存储和可扩展性方面的灵活设计。 Pulsar Functions 回答了如何处理存储在 Pulsar 中的数据的问题。它们是轻量级计算进程，可以消费来自 Pulsar 主题的数据，执行一些计算，然后将结果发布到另一个 Pulsar 主题。
+Pulsar 的核心是高性能消息投递和存储。我们在本章已经详细讨论了 Pulsar 在数据存储和可扩展性方面的灵活设计。 Pulsar Function 回答了如何处理存储在 Pulsar 中的数据的问题。它们是轻量级计算进程，可以消费来自 Pulsar 主题的数据，执行一些计算，然后将结果发布到另一个 Pulsar 主题。
 
 
 
 Pulsar Functions draw inspiration from Functions as a Service implementations such as Google Cloud Functions and Amazon Web Services Lambda Functions. Specifically, Pulsar Functions have a flexible deployment model in which resources can be coupled with Pulsar broker nodes or run as a separate process. Pulsar Functions both receive and output to Pulsar topics (see [Figure 3-9](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch03.html#this_pulsar_function_is_receiving_a_top)).
 
-Pulsar Functions 从 Google Cloud Functions 和 Amazon Web Services Lambda Functions 等 FaaS（Functions as a Service，功能即服务）系统中汲取灵感。具体来说，Pulsar Functions 具有灵活的部署模型，其资源可以与 Pulsar Broker 节点耦合或作为单独的进程运行。 Pulsar Functions 既能接收也能输出到 Pulsar 主题（见图 3-9）。
+Pulsar Function 从 Google Cloud Functions 和 Amazon Web Services Lambda Functions 等 FaaS（Functions as a Service，功能即服务）系统中汲取灵感。具体来说，Pulsar Functions 具有灵活的部署模型，其资源可以与 Pulsar Broker 节点耦合或作为单独的进程运行。 Pulsar Function 既能接收也能输出到 Pulsar 主题（见图 3-9）。
 
 
 
@@ -266,7 +266,7 @@ Pulsar Functions 从 Google Cloud Functions 和 Amazon Web Services Lambda Funct
 
 Pulsar Functions align well with the design principle of modularity. Though Pulsar’s core is written in Java, you can write Pulsar Functions in Java, Python, or Go. The choice to separate Pulsar’s runtime from Pulsar Functions’ runtime reduces the learning curve for programmers who want to learn Pulsar and interact with it. Pulsar Functions are an optional way to process messages in Pulsar. If a user wants to continue using their current stream processing framework, they can do that instead. Pulsar Functions also provide a high-quality stream processing implementation that has a shallow learning curve; if you can write in Java, Python, or Go, you can write semantically correct stream processing without learning a new framework.
 
-Pulsar Functions 与模块化的设计原则非常吻合。 虽然 Pulsar 核心是用 Java 编写的，但你可以用 Java、Python 或者 Go 来编写 Pulsar Functions。 将 Pulsar 的运行时与 Pulsar Functions 的运行时分开的选择，减少了想要学习 Pulsar 并与之交互的程序员的学习曲线。 Pulsar Functions 是在 Pulsar 中处理消息的一种可选方式。 如果用户想继续使用他们当前的流处理框架，也是可以的。 Pulsar Functions 还提供了一个学习曲线较浅的高质量流处理实现； 如果你可以使用 Java、Python 或 Go 编写代码，则无需学习新框架即可编写语义正确的流处理程序。
+Pulsar Function 与模块化的设计原则非常吻合。 虽然 Pulsar 核心是用 Java 编写的，但你可以用 Java、Python 或者 Go 来编写 Pulsar Function。 将 Pulsar 的运行时与 Pulsar Function 的运行时分开的选择，减少了想要学习 Pulsar 并与之交互的程序员的学习曲线。 Pulsar Function 是在 Pulsar 中处理消息的一种可选方式。 如果用户想继续使用他们当前的流处理框架，也是可以的。 Pulsar Function 还提供了一个学习曲线较浅的高质量流处理实现； 如果你可以使用 Java、Python 或 Go 编写代码，则无需学习新框架即可编写语义正确的流处理程序。
 
 
 
