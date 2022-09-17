@@ -467,13 +467,17 @@ BookKeeper 的持久性、容错性和可扩展性使其成为 WAL 实现的正�
 
 
 
-## Message Storing
+## 消息存储
 
 Every messaging system has some implementation for storing messages temporarily. A message broker’s value is in the reliable transport of messages, after all. How we implement that storage will have some downstream consequences on how the data can be used later. For systems like Pulsar, Kafka, and Pravega, message durability is paramount. BookKeeper’s model of ledger storage is the perfect abstraction for storing an event stream (see [Figure 4-15](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#this_topic_has_sequential_data_written)).
 
+每个消息系统都会临时临时存储消息。 毕竟，消息 Broker 的价值在于消息的可靠传输。 我们如何实现该存储会影响以后如何使用数据。 对于 Pulsar、Kafka 和 Pravega 等系统，消息的持久性至关重要。 BookKeeper 的 Ledger 存储模型是存储事件流的完美抽象（见 图 4-15）。
+
+
+
 ![This topic has sequential data written to BookKeeper ledgers.](../img/mapu_0415.png)
 
-*Figure 4-15. This topic has sequential data written to BookKeeper ledgers.*
+*图 4-15. 主题将数据顺序写入写入 BookKeeper Ledger。*
 
 
 
@@ -483,41 +487,73 @@ Following are some of the properties that make BookKeeper a good solution for ev
 - Highly durable
 - Easily distributed
 
-## Object/Blob Storage
+以下属性使得 BookKeeper 成为事件流数据的良好解决方案：
+
+- 仅追加日志
+- 高度持久性
+- 易于分布式
+
+
+
+## 对象/Blob 存储
 
 Object stores allow the storage of arbitrarily large objects for future retrieval. Systems like Amazon S3, Google Cloud Storage, and Azure Blob Storage are popular because they offer a simple API to store and retrieve items from the cloud. In cloud systems, object storage is used for storing images, arbitrary files on behalf of users, and large data lakes. Implementing an object store requires elasticity, or the ability to add new nodes to the cluster without disrupting ongoing operations. It also requires fault tolerance; if nodes in the cluster fail, there should be a reliable backup in the cluster somewhere. In addition, it requires the ability to store and retrieve objects of all kinds. Apache BookKeeper can perform all these tasks and can perform them well. BlobIt is an object store built on top of BookKeeper. It allows for the storage of arbitrarily large objects, and all of the storage is managed with BookKeeper. A user can send a CSV file to BlobIt and the file will be stored on BookKeeper as depicted in [Figure 4-16](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#you_can_store_a_csv_file_on_bookkeeper).
 
+对象存储允许存储任意大的对象以便将来进行检索。 Amazon S3、Google Cloud Storage 和 Azure Blob Storage 等系统很受欢迎，因为它们提供了简单的 API 来存储和检索云中的对象。在云系统中，对象存储用于存储图像、代表用户的任意文件和大型数据湖。实现对象存储需要弹性，在不中断正在进行的操作的情况下向集群添加新节点的能力。它还需要容错性；如果集群中的节点发生故障，集群中的某个地方应该有可靠的备份。此外，它需要存储和检索各种对象的能力。 Apache BookKeeper 可以执行所有这些任务，并且可以很好地执行。 BlobIt 是一个建立在 BookKeeper 之上的对象存储。它允许存储任意大的对象，并且所有的存储都由 BookKeeper 管理。用户可以将 CSV 文件发送到 BlobIt，该文件将存储在 BookKeeper 中，如图 4-16 所示。
+
+
+
 ![You can store a CSV file on BookKeeper for use as a general-purpose object store.](../img/mapu_0416.png)
 
-*Figure 4-16. You can store a CSV file on BookKeeper for use as a general-purpose object store.*
+*图 4-16. 可将 BookKeeper 作为通用对象存储，用来存储 CSV 文件。*
 
 
 
 While BookKeeper can store arbitrarily large data, the complexity in using it as an object store is in managing the movement of the data to and from bytes. BlobIt relies on the distributed and fault-tolerant nature of BookKeeper, and adds value by making an Amazon S3–compliant API.
 
+虽然 BookKeeper 可以存储任意大的数据，但将其用作对象存储的复杂性在于管理数据与字节之间的移动。 BlobIt 依赖于 BookKeeper 的分布式和容错特性，并通过符合 Amazon S3 的 API 来增加价值。
+
+
+
 ## Pravega
 
 Pravega is a distributed messaging system that has a lot of similarities to Pulsar. Developed at Dell, Pravega builds on the concept of a stream as the fundamental building block for storage. Pravega uses BookKeeper in a similar way to Pulsar (see [Figure 4-17](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#pravega_architecturedot_similar_to_apac)): storing all topic and cursor data. Like Pulsar, BookKeeper enables Pravega to scale storage and message throughput independently, and it provides durability for and fault tolerance within a Pravega cluster.
 
+Pravega 是一个分布式消息系统，与 Pulsar 有很多相似之处。 Pravega 由戴尔开发，基于流的概念作为存储的基本构件。 Pravega 使用 BookKeeper 的方式与 Pulsar 类似（见图 4-17）：存储所有主题和游标数据。与 Pulsar 一样，BookKeeper 使 Pravega 能够独立扩展存储和消息吞吐量，并为 Pravega 集群提供持久性和容错性。
+
+
+
 ![Pravega architecture. Similar to Apache Pulsar, Pravega uses BookKeeper for long-term storage, uses ZooKeeper for distributed coordination, and has some responsibilities that are owned by the Pravega servers.](../img/mapu_0417.png)
 
-*Figure 4-17. Pravega architecture. Similar to Apache Pulsar, Pravega uses BookKeeper for long-term storage, uses ZooKeeper for distributed coordination, and has some responsibilities that are owned by the Pravega servers.*
+*图 4-17. Pravega 架构图。与 Apache Pulsar 类似，Pravega 使用 BookKeeper 进行长期存储，使用 ZooKeeper 进行分布式协调，并且 Pravega 服务器负责一些职责。*
 
 
 
 An additional interesting tidbit about Pravega is that its use cases extend beyond just event streaming data (an area that Pulsar is focused on). Pravega is also suitable for streaming video data and large files. As mentioned previously*,* you can store any data on BookKeeper; the challenges lie in how that data is presented and how end users interact with it.
 
+关于 Pravega 的另一个有趣的花絮是，它的使用场景不仅限于事件流数据（Pulsar 关注的领域）。 Pravega 也适用于流媒体视频数据和大文件。如前所述，可以在 BookKeeper 上存储任何数据；挑战在于如何呈现数据以及最终用户如何与之交互。
+
+
+
 ## Majordodo
 
 Majordodo is a resource manager that handles the scheduling of bespoke workloads on ephemeral clusters. Majordodo tracks the resources used in a cluster, the available resources in a cluster, and other metadata about jobs running in a cluster (see [Figure 4-18](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#a_majordodo_clusterdot_bookkeeper_manag)). [Majordodo](https://oreil.ly/kh1T4) utilizes BookKeeper ledgers to track the starting, running, and completion of jobs on the cluster. Since BookKeeper provides low read and write latencies, scheduling workloads is a novel but worthy use. Majordodo is developed and maintained by Diennea, a technology company that helps build scalable digital brand solutions.
 
+Majordodo 是一个资源管理器，用于处理临时集群上的定制工作负载的调度。 Majordodo 跟踪集群中使用的资源、集群中的可用资源以及有关集群中运行的作业的其他元数据（见图 4-18）。 [Majordodo](https://oreil.ly/kh1T4) 利用 BookKeeper Ledger 来跟踪集群上作业的启动、运行和完成。由于 BookKeeper 提供低读写延迟，调度工作负载是一种新颖但值得的使用场景。 Majordodo 由 Diennea 开发和维护，该公司是一家帮助构建可扩展数字品牌解决方案的技术公司 。
+
+
+
 ![A Majordodo cluster. BookKeeper manages data storage for each node so that any node in the cluster can pick up work or distribute existing work.](../img/mapu_0418.png)
 
-*Figure 4-18. A Majordodo cluster. BookKeeper manages data storage for each node so that any node in the cluster can pick up work or distribute existing work.*
+*图 4-18. Majordodo 集群示意图。 BookKeeper 管理每个节点的数据存储，这样集群中的任何节点都可以获取工作或分发现有的工作。*
 
 
 
 In the preceding sections, we spent a lot of time talking about the importance and use cases for BookKeeper. ZooKeeper works in conjunction with BookKeeper and plays a different but equally important role in Pulsar and in the wider software ecosystem. ZooKeeper is discussed in the next section.
+
+在前面的部分中，我们花了很多时间讨论 BookKeeper 的重要性和使用案例。 ZooKeeper 与 BookKeeper 一起工作，在 Pulsar 和更广泛的软件生态系统中扮演着不同但同样重要的角色。 下一节将讨论 ZooKeeper。
+
+
 
 # Apache ZooKeeper
 
