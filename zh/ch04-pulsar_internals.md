@@ -559,11 +559,17 @@ In the preceding sections, we spent a lot of time talking about the importance a
 
 Apache ZooKeeper was developed at Yahoo! in the late 2000s, and the Apache Software Foundation made it an open source platform in 2011. ZooKeeper implements the system described in the 2006 paper “The Chubby Lock Service for Loosely-Coupled Distributed Systems” by Mike Burrows,[^iii] a distinguished engineer at Google. The paper explains why Google needed Chubby to manage its sprawling internal systems and provides some high-level descriptions of its implementation.
 
+Apache ZooKeeper 雅虎于 2000 年代末开发的，并与 2011 年被 Apache 软件基金会开源。ZooKeeper 实现了谷歌工程师 Mike Burrows 在 2006 年的论文“The Chubby Lock Service for Loosely-Coupled Distributed Systems”[^iii] 中描述的系统。 该论文解释了为什么 Google 需要 Chubby 来管理其庞大的内部系统，并提供了一些关于其实现的高层描述。
+
 [^iii]: Mike Burrows, “Chubby lock service for loosely-coupled distributed systems,” *OSDI ’06: Proceedings of the 7th Symposium on Operating Systems Design and Implementation* (November 2006): 24.
 
 
 
 Chubby provides tools for distributed configuration management, service discovery, and a two-phase commit implementation. Chubby is a proprietary service used within Google, and the paper provides a peek at how Google handled a standard set of distributed system problems. With some light shed on how to approach these problems, Yahoo! implemented Apache ZooKeeper.
+
+Chubby 提供了用于实现分布式配置管理、服务发现和两阶段提交的工具。 Chubby 是 Google 内部使用的专有服务，文章简要介绍了 Google 如何处理一系列标准的分布式系统问题。 有了一些关于如何解决这些问题启发，雅虎实现了 Apache ZooKeeper。
+
+
 
 ZooKeeper provides an open source implementation suitable for coordinating distributed systems. ZooKeeper’s primary requirements are:
 
@@ -571,69 +577,129 @@ ZooKeeper provides an open source implementation suitable for coordinating distr
 - Fault tolerance
 - Reliability
 
+ZooKeeper 提供了一个适合协调分布式系统的开源实现。 ZooKeeper 的主要需求是：
+
+- 性能
+- 容错性
+- 可靠性
+
+
+
 By meeting these requirements, ZooKeeper is suitable for implementing several distributed system algorithms, including Paxos and Raft. Another standard implementation on top of ZooKeeper is the two-phase commit protocol. The two-phase commit ensures atomicity, or that all nodes have a shared understanding of the system’s current state in a distributed system. The two-phase commit is illustrated in [Figure 4-19](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#in_this_two-phase_commitcomma_a_new_cha).
+
+通过满足这些要求，ZooKeeper 适用于实现多种分布式系统算法，包括 Paxos 和 Raft。 ZooKeeper 之上的另一个标准实现是两阶段提交协议。两阶段提交确保原子性，或者所有节点对分布式系统中的系统当前状态有共同的理解。两阶段提交如图 4-19 所示。
+
+
 
 ![In this two-phase commit, a new change is accepted by the leader and immediately sent to followers as part of a single transaction.](../img/mapu_0419.png)
 
-*Figure 4-19. In this two-phase commit, a new change is accepted by the leader and immediately sent to followers as part of a single transaction.*
+*图 4-19. 在两阶段提交中，领导者接受新的更改并立即将其作为单个事务的一部分发送给追随者。*
 
 
 
 In Pulsar, ZooKeeper manages the BookKeeper configuration and distributed consensus, and stores metadata about Pulsar topics and configuration. It plays an integral role in all Pulsar operations, and replacing it would be difficult. It’s worth diving into a few examples of use cases for ZooKeeper to understand its importance to Pulsar.
 
-## Naming Service
+在 Pulsar 中，ZooKeeper 管理 BookKeeper 的配置和分布式共识，并存储有关 Pulsar 主题和配置的元数据。它在所有 Pulsar 操作中都扮演着不可或缺的角色，要替换它是很困难的。值得深入研究 ZooKeeper 的一些使用场景案例，以了解它对 Pulsar 的重要性。
+
+
+
+## 命名服务
 
 One common way systems integrate with Apache ZooKeeper is as a naming service. A naming service maps network resources to their respective addresses. In a system with many nodes, keeping track of their identity and their place in the network can be tricky. Apache Mesos uses ZooKeeper for this purpose (among others). In a Mesos cluster, ZooKeeper stores every node, their status, and a leader or follower. If nodes need to coordinate, ZooKeeper can be used as a lookup. ZooKeeper serves this purpose in Apache Pulsar as well, as depicted in [Figure 4-6](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#broker_one_is_not_the_leader_for_topic) earlier in this chapter.
 
-## Configuration Management
+与 Apache ZooKeeper 进行集成的系统的一种常见方式是作为命名服务。 命名服务将网络资源映射到它们各自的地址。 在一个多节点系统中，跟踪节点身份以及节点在网络中的位置可能很棘手。 Apache Mesos 使用 ZooKeeper 来实现这个目的。 在 Mesos 集群中，ZooKeeper 存储每个节点、它们的状态以及领导者或追随者信息。 如果节点需要协调，可以使用 ZooKeeper 进行查找。 ZooKeeper 在 Apache Pulsar 中也有此用途，如本章 图 4-6 所示。
+
+
+
+## 配置管理
 
 Apache Pulsar has about 150 configuration values that are tunable by Pulsar operators. Each value changes the underlying behavior of Pulsar, ZooKeeper, or BookKeeper. Some of those configurations impact the publishing and consumption of messages in the Pulsar cluster. Pulsar brokers store their configuration in ZooKeeper because a reliable and highly available place to retrieve and store those configurations is paramount.
 
+Apache Pulsar 有大约 150 个配置值，可由 Pulsar 运维人员进行调整。 每个值都会改变 Pulsar、ZooKeeper 或 BookKeeper 的底层行为。 其中一些配置会影响 Pulsar 集群中消息的发布和消费。 Pulsar Broker 将他们的配置存储在 ZooKeeper 中，因为有一个可靠的、高度可用的地方来检索和存储这些配置是至关重要的。
+
+
+
 In some ways, ZooKeeper is a safe, distributed storage engine. As [Figure 4-20](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#a_zookeeper_cluster_can_store_multiple) shows, ZooKeeper can keep track of named keys and values.
+
+从某些方面说，ZooKeeper 是一个安全的分布式存储引擎。 正如图 4-20所示，ZooKeeper 可以跟踪命名的键和值。
+
+
 
 ![A ZooKeeper cluster can store multiple configuration values.](../img/mapu_0420.png)
 
-*Figure 4-20. A ZooKeeper cluster can store multiple configuration values.*
+*图 4-20. ZooKeeper 集群可以存储多个配置值。*
 
-## Leader Election
+
+
+## 领导者选举
 
 Leader election is the process of choosing a leader for a specific set of responsibilities in a distributed system. In Apache Pulsar, a broker is the leader of a topic (or one or more partitions in a partitioned topic). If that broker goes offline, a new broker is elected the leader of that same topic or partition(s). Building on both the naming service use case and the configuration use case, ZooKeeper can provide a reliable building block for implementing leader election. It keeps track of leaders, knows where they are in the cluster, and can be called on to implement new leaders in the future, as depicted in [Figure 4-21](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#in_this_leader-follower_modelcomma_the).
 
+领导者选举是在分布式系统中为一组特定职责选择一个领导者的过程。 在 Apache Pulsar 中，Broker 是主题（或分区主题中的一个或多个分区）的领导者。 如果该 Broker 下线，则新的 Broker 将被选为该主题或分区的领导者。 基于命名服务使用场景和配置管理使用场景，ZooKeeper 可以为实现领导者选举提供可靠构件。 它跟踪领导者，知道他们在集群中的位置，并且可以在未来被调用以实现新的领导者，如图 4-21 所示。
+
+
+
 ![In this leader-follower model, the values are tracked across ZooKeeper nodes.](../img/mapu_0421.png)
 
-*Figure 4-21. In this leader-follower model, the values are tracked across ZooKeeper nodes.*
+*图 4-21. 在领导者-追随者模型中，配置值跨 ZooKeeper 节点进行跟踪。*
 
-## Notification System
+
+
+## 通知系统
 
 The final ZooKeeper use case that we’ll cover is that of a notification system. In [Chapter 1](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch01.html#the_value_of_real-time_messaging), you learned how notifications can help patients in a hospital receive better care. The most important aspects of a notification system are the timely delivery of notifications and the guaranteed delivery of notifications. If you miss a notification about engagement on a tweet you sent late last night, that isn’t a world-stopping event. However, if you miss a notification to renew your driver’s license, you may be arrested the next time you are pulled over. We’ve discussed how ZooKeeper serves as a high-quality naming service. The same qualities that make ZooKeeper a good naming service make it an excellent notification system. Namely, we can ensure that the system state is shared by all parties, and that if a party doesn’t have that notification, we can quickly determine it using ZooKeeper. [Figure 4-22](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#the_commit_protocol_used_in_zookeeper_i) provides a high-level view of this concept.
 
+我们要介绍的最后一个 ZooKeeper 使用场景是通知系统。在 [第 1 章](./ch01-the_value_of_real-time_messaging.md)中，你了解了通知是如何帮助医院的患者获得更好的护理。通知系统中最重要的是通知的及时投递和通知的保证投递。如果你错过了关于你昨晚深夜发送的推文的评论通知，那并不是一个震惊世界的事件。但是，如果你错过了更新驾驶执照的通知，那么在下次被拦下时久可能会被捕。我们已经讨论了 ZooKeeper 如何充当高质量的命名服务，相同的品质使其成为出色的通知系统。也就是说，我们可以确保系统状态由各方共享，并且如果一方没有该通知，我们可以使用 ZooKeeper 快速确定它。 图 4-22提供了这个概念的高层视图。
+
+
+
 ![The commit protocol used in ZooKeeper is useful as a notification protocol.](../img/mapu_0422.png)
 
-*Figure 4-22. The commit protocol used in ZooKeeper is useful as a notification protocol.*
+*图 4-22. ZooKeeper 中使用的提交协议可用作通知协议。*
+
+
 
 ## Apache Kafka
 
 Apache Kafka is a distributed messaging system suitable for event streaming. It has broad adoption because of its thoughtful API design and scalability characteristics. Developed at LinkedIn and made freely available in 2014, Kafka provides the building blocks for event management and real-time systems at companies around the world. As of version 2.5, Kafka utilizes Apache ZooKeeper for configuration management and leader election. ZooKeeper plays a critical role in fault tolerance and message delivery in a Kafka cluster. [Figure 4-23](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#this_apache_kafka_cluster_has_three_bro) depicts a Kafka cluster with Apache ZooKeeper.
 
+Apache Kafka 是一个适用于事件流场景的分布式消息系统。由于其周到的 API 设计和可扩展性特性，它得到了广泛应用。 Kafka 由 LinkedIn 开发，并于 2014 年免费提供，为世界各地的公司提供事件管理和实时系统的构件。从 2.5 版开始，Kafka 使用 Apache ZooKeeper 进行配置管理和领导者选举。 ZooKeeper 在 Kafka 集群中的容错和消息传递中起着至关重要的作用。 图 4-23 描绘了一个带有 Apache ZooKeeper 的 Kafka 集群。
+
+
+
 ![This Apache Kafka cluster has three brokers, and ZooKeeper for coordination and leader election.](../img/mapu_0423.png)
 
-*Figure 4-23. This Apache Kafka cluster has three brokers, as well as ZooKeeper for coordination and leader election.*
+*图 4-23. Apache Kafka 集群示例：有三个 Broker，以及用于协调和领导选举的 ZooKeeper。*
+
+
 
 Interestingly, the Kafka project removed the requirement of ZooKeeper in a Kafka cluster as of version 2.8 and replaced the ZooKeeper responsibilities with a Raft consensus implementation within the cluster itself. [Figure 4-24](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#this_kafka_cluster_has_three_nodes_with) depicts this change.
 
+有趣的是，从 2.8 版本开始，Kafka 项目删除了 Kafka 集群对 ZooKeeper 的要求，并用集群本身内的 Raft 共识实现替换了 ZooKeeper 职责。 图 4-24描述了这一变化。
+
+
+
 ![This Kafka cluster has three nodes with their own consensus algorithm, known as KRaft (Kafka Raft).](../img/mapu_0424.png)
 
-*Figure 4-24. This Kafka cluster has three nodes with their own consensus algorithm, known as KRaft (Kafka Raft).*
+*图 4-24. 该 Kafka 集群有三个节点，有自己的共识算法，称为 KRaft（Kafka Raft）。*
+
+
 
 ## Apache Druid
 
 Apache Druid is a real-time analytics database originally developed by Metamarkets in 2011 and made freely available through the Apache Software Foundation in 2015. Druid powers the analytics suite of companies like Alibaba, Airbnb, and [Booking.com](http://booking.com/). Unlike SQL-on-Anything engines[^iiii] such as Presto and Apache Spark, Druid stores and indexes data and queries it. As a distributed system, Druid uses ZooKeeper for configuration management and consensus management (see [Figure 4-25](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#this_apache_druid_cluster_consists_of_q)). ZooKeeper plays a critical role in allowing Druid clusters to scale out without management overhead or performance degradation.
 
-[^iiii]: SQL-on-Anything is a query engine that enables users to write SQL queries against files, representational state transfer (REST). APIs, databases, and other sources of data. We will cover this topic in more detail in [Chapter 10](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch10.html#pulsar_sql-id000029).
+Apache Druid 是一个实时分析数据库，最初由 Metamarkets 于 2011 年开发，并于 2015 年通过 Apache 软件基金会免费提供。Druid 为阿里巴巴、Airbnb 和 Booking.com 等公司的分析套件提供动力。与 Presto 和 Apache Spark 等 SQL-on-Anything 引擎[^iiii] 不同，Druid 存储和索引数据并对其进行查询。作为分布式系统，Druid 使用 ZooKeeper 进行配置管理和共识管理（见图 4-25）。 ZooKeeper 在允许 Druid 集群中发挥着重要作用，保障横向扩展而无需管理开销以及无需损失性能。
+
+[^iiii]: SQL-on-Anything 是一个查询引擎，使用户能够编写针对文件、表征状态传输 (REST)、 API、数据库和其他数据源的 SQL 查询。我们将在 [第 10 章](./ch10-pulsar_sql.md) 中更详细地介绍这个主题。
+
+
 
 ![This Apache Druid cluster consists of query nodes, coordinator nodes, data storage nodes, and ZooKeeper for configuration management and service discovery.](../img/mapu_0425.png)
 
-*Figure 4-25. This Apache Druid cluster consists of query nodes, coordinator nodes, data storage nodes, and ZooKeeper for configuration management and service discovery.*
+*图 4-25. Apache Druid 集群由查询节点、协调节点、数据存储节点和用于配置管理和服务发现的 ZooKeeper 组成。* 
+
+
 
 # Pulsar Proxy
 
