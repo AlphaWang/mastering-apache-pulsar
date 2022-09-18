@@ -1,32 +1,60 @@
-# Chapter 5. Consumers
+# 第 5 章：消费者
 
 So far, we’ve talked about consuming messages in Pulsar, but we haven’t discussed the specifics of how messages can be consumed in Pulsar. It’s worth taking a moment to specify what a consumer is in Pulsar.
 
+到目前为止，我们已经讨论了 Pulsar 中消息消费，但我们还没有讨论如何在 Pulsar 中消费消息的细节。值得花些时间来说明一下 Pulsar 中的消费者具体是指什么。
+
+
+
 A Pulsar consumer is any process that subscribes to a Pulsar topic. Consumers are typically native consumers (Java, Python, or Go processes that subscribe to topics), Pulsar Functions, Pulsar IO, or subscribers via HTTP proxy. How message brokers manage consumers has a material impact on the types of applications built on top of the messaging system. As such, Pulsar’s philosophy about consuming is to be as flexible as the system can warrant. Pulsar achieves this flexibility through a novel subscription model, acknowledgment schemes, configurable consumption modes, and a tunable way to manage message age. These design decisions play a crucial role in enabling the rich applications that run on Pulsar today.
+
+Pulsar 消费者是指订阅 Pulsar 主题的任何进程。消费者通常是原生消费者（订阅主题的 Java、Python 或 Go 进程）、Pulsar Functions、Pulsar IO 或通过 HTTP 代理的订阅者。消息 Broker 如何管理消费者对构建在消息系统之上的应用程序类型有重大影响。因此，Pulsar 的消费理念是系统在允许范围内尽可能灵活。 Pulsar 通过新颖的订阅模型、确认方案、可配置的消费模式、以及可调整的消息年龄管理方式实现了这种灵活性。这些设计决策在实现当今在 Pulsar 上运行的丰富的应用程序中发挥着至关重要的作用。
+
+
 
 From the perspective of a messaging system, you may be asking why we aren’t starting with producers before consumers. After all, we do need to get data into the system before being able to consume it. There are some good reasons to introduce consumers first, but the main reason is because there are fewer concepts to cover. Producers introduce concepts such as partitioned topics, and we’ll save that until we have a better idea of some of the more rudimentary client configurations you’ll find for a consumer. In this chapter you can expect a good deal more code samples.
 
-# What Does It Mean to Be a Consumer?
+从消息系统的角度来看，你可能会问为什么我们不先从生产者开始介绍。毕竟，我们确实需要先将数据输入系统，然后才能消费它。首先介绍消费者有许多理由，但主要原因是因为要涵盖的概念较少。生产者引入了诸如分区主题之类的概念，我们会把这个问题保留到我们对消费者有些初步了解之后再来讨论。在本章中，你可以期待更多的代码示例。
+
+
+
+# 成为消费者意味着什么？
 
 As I just mentioned a consumer is any process that subscribes to a Pulsar topic. A Pulsar topic is an immutable log of data. The data enters the log through a producer (or many producers) and can be consumed by a consumer (or many consumers). [Figure 5-1](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch05.html#in_this_simple_example_of_a_logcomma_on) provides the simplest illustration of this, with one consumer and one producer consuming from a log of messages.
 
+正如我刚刚提到的，消费者是订阅 Pulsar 主题的任何进程。 Pulsar 主题是不可变的数据日志。数据通过一个生产者（或多个生产者）进入日志，可以被一个消费者（或多个消费者）消费。 图 5-1提供了最简单的说明，一个生产者写入日志，一个消费者消费来自消息日志。
+
+
+
 ![In this simple example of a log, one producer and one consumer consume a log with seven entries.](../img/mapu_0501.png)
 
-*Figure 5-1. In this simple example of a log, one producer and one consumer consume a log with seven entries.*
+*图 5-1. 在这个简单的日志示例中，一个生产者和一个消费者消费包含七个条目的日志。*
 
 
 
 In this scenario, if the log were to grow from seven entries to hundreds of thousands of entries, the consumer would just continue to receive messages. This is a simple model of consumption, but it doesn’t answer questions concerning the relationship between the immutable log, the producer, and the consumer. For example, what happens when the consumer is unavailable but the producer continues to publish messages? Does the consumer keep track of where they were in the log? Does the log itself keep track of it? These are questions that not only determine how programmers interact with a messaging system, but also influence what kinds of applications can be built on top of the streaming system. Pulsar handles this by providing flexibility to the end user to determine which kind of interaction the consumer (and producer) should have with the log. Pulsar refers to the mechanism by which a consumer subscribes to a topic as a *subscription*, and we’ll get into how subscriptions work now.
 
-# Subscriptions
+在这种情况下，如果日志从七个条目增长到数十万个条目，消费者将继续接收消息。这是一个简单的消费模型，但它没有回答有关不可变日志、生产者和消费者之间关系的问题。例如，当消费者不可用但生产者继续发布消息时会发生什么？消费者是否跟踪他们在日志中的位置？日志本身是否会跟踪它？这些问题不仅决定了程序员如何与消息系统交互，而且还影响可以在流式系统之上构建哪些类型的应用程序。 Pulsar 通过为终端用户提供灵活性来决定消费者（和生产者）应该与日志进行哪种交互来处理这个问题。 Pulsar 将消费者订阅主题的机制称为 *subscription*，我们现在将了解订阅是如何工作的。
+
+
+
+# 订阅
 
 Apache Pulsar provides an abstraction and configuration for consumers, called a subscription. A subscription describes who the consumers of a topic are and how they would like to consume it. [Figure 5-2](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch05.html#a_hand_left_parenthesisproducerright_pa) depicts how a subscription might be managed. While the topic may have many different consumers, the producer adds messages and the broker will route the messages to the correct consumers.
 
+Apache Pulsar 为消费者提供了一种抽象和配置，称为订阅。订阅描述了主题的消费者是谁以及他们希望如何消费该主题。 图 5-2 描述了订阅是如何被管理的。主题可能有许多不同的消费者，生产者则添加消息，而 Broker 将消息路由到正确的消费者。
+
+
+
 A subscription can be for one or more topics, and it can have one of four types of semantics. Before we jump into the subscription types in Pulsar, it’s worth taking a closer look at this approach and what’s required from the programmer to engage with Pulsar topics via a subscription.
+
+订阅可以针对一个或多个主题，并且可以具有四种语义类型之一。在我们讲解 Pulsar 订阅类型之前，有必要仔细研究一下这种方法以及程序员如何通过订阅参与 Pulsar 主题交互。
+
+
 
 ![A producer places a new message into the topic, and the message is routed to an appropriate consumer.](../img/mapu_0502.png)
 
-*Figure 5-2. A producer places a new message into the topic, and the message is routed to an appropriate consumer.*
+*图 5-2. 生产者将新消息写入主题，消息将被路由到适当的消费者。*
 
 
 
