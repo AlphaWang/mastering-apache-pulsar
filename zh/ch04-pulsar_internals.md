@@ -749,45 +749,85 @@ ZooKeeper、BookKeeper 和 Pulsar 之间的共同点是 Java 编程语言和 Jav
 
 
 
-# Java Virtual Machine (JVM)
+# Java 虚拟机 (JVM)
 
 Pulsar brokers, Apache BookKeeper, and Apache ZooKeeper are written in the Java programming language and run on the Java virtual machine (JVM). Earlier in this chapter, we explored a Pulsar broker’s components and noted that a broker is primarily an HTTP server that implements a special TCP protocol (depicted in [Figure 4-30](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#the_pulsar_hierarchy_is_built_on_the_jv)). Nothing within Pulsar screams that it should have been written in Java, so why was Java chosen for Pulsar years ago, and is it still a good choice today?
 
+Pulsar Broker、Apache BookKeeper 和 Apache ZooKeeper 都是用 Java 编程语言编写的，并在 Java 虚拟机 (JVM) 上运行。 在本章前面，我们探讨了 Pulsar Broker 的组件，并注意到 Broker 主要是一个实现了一个特殊的 TCP 协议的 HTTP 服务器，如图 4-30 所示。 Pulsar 内部没有任何东西表明它应该用 Java 编写，那么为什么多年前 Pulsar 选择了 Java，现在它仍然是一个好选择吗？
+
+
+
 ![The Pulsar hierarchy is built on the JVM with HTTP and a special TCP protocol.](../img/mapu_0430.png)
 
-*Figure 4-30. The Pulsar hierarchy is built on the JVM with HTTP and a special TCP protocol.*
+*图 4-30. Pulsar 层次结构建立在 JVM 上，带有 HTTP 和特殊的 TCP 协议。*
+
+
 
 To understand why Yahoo! chose Java, it’s essential to consider the environment in which Pulsar was born. Pulsar’s creation [dates back to 2013](https://oreil.ly/pXKjo), when Yahoo! experienced unparalleled user growth. As Yahoo! grew, it ran into unprecedented challenges in the storage, transmission, and retrieval of data. At the time, the Hadoop ecosystem powered the storage and retrieval systems for most web-scale companies. With Hadoop, many of the tools used to build distributed consensus and configuration management were born and written in Java. Apache Mesos (see [Figure 4-31](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#apache_mesos_is_a_container_orchestrati)) was one of these systems.
 
+要了解雅虎为什么选择 Java，就必须考虑 Pulsar 诞生的环境。 Pulsar 的创作 [追溯到 2013 年](https://oreil.ly/pXKjo)，当时雅虎经历了前所未有的用户增长。随着雅虎的发展，它在数据存储、传输和检索方面遇到了前所未有的挑战。当时，Hadoop 生态系统为大多数大规模公司的存储和检索系统提供支持。借助 Hadoop，许多用于构建分布式共识和配置管理的工具诞生了，并且都是用 Java 编写的。 Apache Mesos（见图 4-31）就是这种系统之一。
+
 ![Apache Mesos is a container orchestration engine that is written in Java and utilizes Apache ZooKeeper.](../img/mapu_0431.png)
 
-*Figure 4-31. Apache Mesos is a container orchestration engine that is written in Java and utilizes Apache ZooKeeper.[^iiiii]*
+*图 4-31。 Apache Mesos 是一个用 Java 编写的并利用 Apache ZooKeeper 的容器编排引擎。[^iiiiii]*
 
-[^iiiii]: Apache Mesos was retired from the Apache Software Foundation in 2020. 
+[^iiiii]: Apache Mesos 于 2020 年从 Apache 软件基金会退役。 
 
 
 
 The first and most pragmatic reason to choose Java and the JVM is that many developers know the Java programming language. According to Slashdot, the number of Java developers as of 2018 was 7.3 million. That is a significant percentage of the overall total of 23 million developers. As an open source project, Pulsar can have a lot more success by tapping into a more extensive developer market.
 
+选择 Java 和 JVM 的首要也是最务实的原因是，许多开发人员都了解 Java 编程语言。根据 Slashdot 的数据，截至 2018 年，Java 开发人员的数量为 730 万。这在 2300 万开发者总数中占很大比例。作为一个开源项目，Pulsar 可以通过进入更广泛的开发者市场取得更大的成功。
+
+
+
 In addition, the Java ecosystem is vast. There are Java libraries for just about everything, and when implementing a platform for all messaging needs, existing libraries can go a long way toward simplifying development.
 
+此外，Java 生态系统是巨大的。几乎所有东西都有 Java 库，当实现一个满足所有消息传递需求的平台时，现有的库可以大大简化开发。
+
+
+
 Finally, Java has an excellent track record of powering essential and scalable solutions in technology. Let’s explore three of them in more depth.
+
+最后，Java 在为技术中的基本和可扩展解决方案提供支持方面有着出色的记录。让我们更深入地探讨其中的三个。
+
+
 
 ## Netty
 
 Netty is a web server written in Java. It powers the web server infrastructure of companies like Facebook, Apple, Google, and Yahoo! Netty’s two goals are to be portable (run in as many places as possible) and to perform (handle as many concurrent connections as possible). Building a web server requires quality implementations for web protocols, concurrency, and network management. Java has battle-tested implementations for these systems, among others. Netty’s success and use can be attributed to a great developer community, ease of use, and development as a JVM project.
 
+Netty 是一个用 Java 编写的 Web 服务器。 它为 Facebook、Apple、Google 和雅虎等公司的 Web 服务器基础架构提供支持。 Netty 的两个目标是可移植（在尽可能多的地方运行）和执行（处理尽可能多的并发连接）。 构建 Web 服务器需要高质量的 Web 协议、并发和网络管理实现。 Java 已经为这些系统等提供了久经考验的实现。 Netty 的成功和使用可以归功于优秀的开发者社区、易用性以及作为 JVM 项目的开发。
+
+
+
 ## Apache Spark
 
 Apache Spark is a distributed computing system for in-memory computing. Spark originated at the University of California, Berkeley, and was made freely available through the Apache Software Foundation in 2014. Companies such as Apple, Coinbase, and Capital One use Spark to power their analytics and machine learning. As with Pulsar, Spark developers utilize the JVM for its concurrency primitives and network libraries (the first versions of Spark used Netty for networking), development speed, and reliability. Spark is written in Scala, a programming language that shares the JVM with Java. The interoperability between Scala and Java allows Spark developers to build on the JVM’s rich libraries.
+
+Apache Spark 是一个用于内存计算的分布式计算系统。 Spark 起源于加州大学伯克利分校，并于 2014 年通过 Apache 软件基金会免费提供。Apple、Coinbase 和 Capital One 等公司使用 Spark 为其分析和机器学习提供支持。 与 Pulsar 一样，Spark 开发人员将 JVM 用于其并发原语和网络库（Spark 的第一个版本使用 Netty 进行联网）、开发速度和可靠性。 Spark 是用 Scala 编写的，这是一种与 Java 共享 JVM 的编程语言。 Scala 和 Java 之间的互操作性允许 Spark 开发人员在 JVM 的丰富库上进行构建。
+
+
 
 ## Apache Lucene
 
 Apache Lucene is an indexing engine that was written in Java and runs on the JVM. Lucene provides the building blocks for search systems such as Elasticsearch, Apache Solr, and CrateDB. Lucene implements the necessary algorithms to index text and perform fuzzy searching over a corpus, and it uses other critical algorithms in search. Search is something we come to expect in the 21st century. Not only can we search the entire web with tools like Google, DuckDuckGo, and Bing, but we can search our email, files on our computers, and even files across our entire presence on the web. Lucene powers the majority of search experiences we encounter on the web.
 
+Apache Lucene 是一个用 Java 编写并在 JVM 上运行的索引引擎。 Lucene 为 Elasticsearch、Apache Solr 和 CrateDB 等搜索系统提供构件。 Lucene 实现了必要的算法来索引文本并在语料库上执行模糊搜索，并且它在搜索中使用了其他关键算法。 搜索是我们在 21 世纪所期待的。 我们不仅可以使用 Google、DuckDuckGo 和 Bing 等工具搜索整个网络，还可以搜索我们的电子邮件、计算机上的文件，甚至是整个网络上的文件。 Lucene 为我们在网络上遇到的大多数搜索体验提供支持。
+
+
+
 We covered the positives of the JVM and Java, but there are some negatives as well: notably, the size of JVM applications, the impact of garbage collection on application performance, and the compile times associated with large Java applications. In subsequent chapters, we’ll explore how each of these downsides impacts Pulsar.
 
-# Summary
+我们讨论了 JVM 和 Java 的优点，但它们也有一些缺点：特别是 JVM 应用程序的大小、垃圾收集对应用程序性能的影响，以及大型 Java 应用程序的编译时间。 在随后的章节中，我们将探讨这些缺点如何影响 Pulsar。
+
+
+
+# 总结
 
 In this chapter we covered the three primary components that make up a Pulsar cluster: Pulsar brokers, Apache BookKeeper, and Apache ZooKeeper. You learned about the reasoning behind their inclusion in the project and the common thread among them: the Java virtual machine. Now that you know what Pulsar can do, you should be ready to take a closer look at how to use it. In the next few chapters, we’ll discuss the interfaces and tools available in Pulsar, and how to build applications.
+
+在本章中，我们介绍了构成 Pulsar 集群的三个主要组件：Pulsar Broker、Apache BookKeeper 和 Apache ZooKeeper。 你了解了 Pulsar 包含这几个组件的原因以及它们之间的共同点：Java 虚拟机。 既然你知道 Pulsar 可以做什么，那么你应该准备好仔细研究如何使用它。 在接下来的几章中，我们将讨论 Pulsar 中可用的接口和工具，以及如何构建应用程序。
+
+
 
