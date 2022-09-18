@@ -705,29 +705,49 @@ Apache Druid 是一个实时分析数据库，最初由 Metamarkets 于 2011 年
 
 While Pulsar brokers are the communication mechanism for Pulsar clients, in cases when the brokers are deployed in a private network scenario, we may need a way to expose communication with the outside world. [Figure 4-26](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#a_pulsar_deployment_on_kubernetesdot_th) shows an example of such a scenario.
 
+Pulsar Broker 是 Pulsar 客户端与集群进行通信的机制，但如果 Broker 部署在私有网络中，我们可能需要用其他方式来进行通信。 图 4-26 展示了这种场景的一个示例。
+
 ![A Pulsar deployment on Kubernetes. The client tries to reach Pulsar over the internet, but the brokers cannot be exposed and Pulsar cannot be reached.](../img/mapu_0426.png)
 
-*Figure 4-26. A Pulsar deployment on Kubernetes. The client tries to reach Pulsar over the internet, but the brokers cannot be exposed and Pulsar cannot be reached.*
+*图 4-26. 部署在 Kubernetes 上的 Pulsar。客户端尝试通过 Internet 访问 Pulsar，但无法访问 Broker，亦即无法访问 Pulsar。* 
+
+
 
 A Pulsar proxy is an optional gateway that simplifies the process of exposing brokers to outside traffic. A proxy can be deployed as an additional service and serve the role of taking on internet traffic and routing the messages to the right broker (see [Figure 4-27](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#this_pulsar_proxy_is_exposing_brokers_o)).
 
+Pulsar Proxy 是一个可选的网关，它简化了将 Broker 暴露给外部流量的过程。Proxy 可以作为一项附加的服务部署，并起到接收互联网流量并将消息路由到正确 Broker 的作用（见图 4-27)。
+
 ![This Pulsar proxy is exposing brokers on the Kubernetes deployment to the internet so that a client can reach it.](../img/mapu_0427.png)
 
-*Figure 4-27. This Pulsar proxy is exposing brokers on the Kubernetes deployment to the internet so that a client can reach it.*
+*图 4-27. Pulsar Proxy 将部署在 Kubernetes 上的 Broker 暴露给互联网，这样客户端可以访问到 Broker。*
+
+
 
 In many cases, we should have an additional load-balancing layer, called a proxy frontend, to handle the concerns of edge internet traffic (see [Figure 4-28](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#in_this_configurationcomma_the_proxy_ha)).
 
+在许多情况下，还应该有一个额外的负载平衡层，称为代理前端，来处理边缘互联网流量的问题（见图 4-28)。
+
 ![In this configuration, the proxy handles all internet traffic. However, it is better suited for routing traffic across brokers.](../img/mapu_0428.png)
 
-*Figure 4-28. In this configuration, the proxy handles all internet traffic. However, it is better suited for routing traffic across brokers.*
+*图 4-28. 在此配置中，Proxy 处理所有互联网流量。但是，它更适合跨 Broker 进行流量路由。*
+
+
 
 Proxy frontends such as HAProxy and NGINX are purpose built for handling internet scale traffic. Using these with a Pulsar proxy as a destination can help ease the load on the proxy (see [Figure 4-29](https://learning.oreilly.com/library/view/mastering-apache-pulsar/9781492084891/ch04.html#a_load_balancer_in_front_of_a_pulsar_pr)).
 
+HAProxy 和 NGINX 等代理前端专为处理互联网规模的流量而设计。将它们与 Pulsar Proxy 一起使用可以帮助减轻 Proxy 上的负载（见图 4-29）。
+
 ![A load balancer in front of a Pulsar proxy. In this scenario, the load balancer manages communication with clients and the proxy works more as a forwarder.](../img/mapu_0429.png)
 
-*Figure 4-29. A load balancer in front of a Pulsar proxy. In this scenario, the load balancer manages communication with clients and the proxy works more as a forwarder.*
+*图 4-29. 负载均衡器部署在 Pulsar Proxy 前面。在这种情况下，负载均衡器管理与客户端的通信，Proxy 更多充当转发器角色。*
+
+
 
 The common thread between ZooKeeper, BookKeeper, and Pulsar is the Java programming language and the Java virtual machine (JVM). Let’s turn our attention to the JVM and the role it plays in Pulsar projects.
+
+ZooKeeper、BookKeeper 和 Pulsar 之间的共同点是 Java 编程语言和 Java 虚拟机 (JVM)。让我们把注意力转向 JVM 及其在 Pulsar 项目中所扮演的角色。
+
+
 
 # Java Virtual Machine (JVM)
 
